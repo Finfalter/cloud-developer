@@ -30,17 +30,46 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   /**************************************************************************** */
 
   //! END @TODO1
+  app.get( "/filteredimage", async ( req, res ) => {
+    let url = req.query.image_url
+
+    if (!url || !isURL(url))
+      return res.status(400).send({ message: 'a valid url is required, try /filteredimage?image_url=<your_valid_url>' });
+
+    let photo = await filterImageFromURL(url);
   
+    res.status(200).sendFile(photo);
+
+    res.on('finish', function() {
+      deleteLocalFiles([photo]);
+    });
+  } );
+
   // Root Endpoint
   // Displays a simple message to the user
   app.get( "/", async ( req, res ) => {
     res.send("try GET /filteredimage?image_url={{}}")
   } );
   
-
   // Start the Server
   app.listen( port, () => {
       console.log( `server running http://localhost:${ port }` );
       console.log( `press CTRL+C to stop server` );
   } );
 })();
+
+
+/** 
+ * checks if a given url is valid
+ * borrowed from [StackOverflow](https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url)
+ */
+
+function isURL(s : string) {
+  var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+    '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+    '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+    '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+  return !!pattern.test(s);
+}
