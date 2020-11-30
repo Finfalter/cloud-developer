@@ -1,8 +1,15 @@
 import express from 'express';
+import { sequelize } from './sequelize';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
+import { requireAuth } from './controllers/v0/users/routes/auth.router';
+import { V0MODELS } from './controllers/v0/model.index';
+
+import { IndexRouter } from './controllers/v0/index.router';
 
 (async () => {
+  await sequelize.addModels(V0MODELS);
+  //await sequelize.sync();
 
   // Init the Express application
   const app = express();
@@ -29,8 +36,12 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
   /**************************************************************************** */
 
+  app.use('/', IndexRouter)
+
   //! END @TODO1
-  app.get( "/filteredimage", async ( req, res ) => {
+  app.get( "/filteredimage", 
+    requireAuth,
+    async ( req, res ) => {
     let url = req.query.image_url
 
     if (!url || !isURL(url))
