@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "dd243a8e-a92d-4d52-92dd-b7653b755155",
+		"_postman_id": "bfbd6ebe-007a-4211-9d2b-5942297a6dbd",
 		"name": "cloud-cdnd-c2-final",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -40,10 +40,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://{{HOST}}/filteredimage?image_url=https://timedotcom.files.wordpress.com/2019/03/kitten-report.jpg",
-					"protocol": "http",
+					"raw": "{{host}}/filteredimage?image_url=https://upload.wikimedia.org/wikipedia/commons/b/bd/Golden_tabby_and_white_kitten_n01.jpg",
 					"host": [
-						"{{HOST}}"
+						"{{host}}"
 					],
 					"path": [
 						"filteredimage"
@@ -51,7 +50,7 @@
 					"query": [
 						{
 							"key": "image_url",
-							"value": "https://timedotcom.files.wordpress.com/2019/03/kitten-report.jpg"
+							"value": "https://upload.wikimedia.org/wikipedia/commons/b/bd/Golden_tabby_and_white_kitten_n01.jpg"
 						}
 					]
 				}
@@ -64,7 +63,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "8b7b4115-6c28-470c-9953-c648ce8f39fa",
+						"id": "667880c6-1936-44dc-a3b6-92aa77a0b947",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
@@ -98,13 +97,11 @@
 					"raw": "{\n\t\"email\":\"hello@gmail.com\",\n\t\"password\":\"fancypass\"\n}"
 				},
 				"url": {
-					"raw": "{{host}}/api/v0/users/auth",
+					"raw": "{{host}}/users/auth",
 					"host": [
 						"{{host}}"
 					],
 					"path": [
-						"api",
-						"v0",
 						"users",
 						"auth"
 					]
@@ -118,7 +115,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "6fc735e7-e424-462f-abc9-36777cd59b8f",
+						"id": "81b6a8bc-0998-4eb8-9d1b-926517104465",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
@@ -174,7 +171,7 @@
 		{
 			"listen": "prerequest",
 			"script": {
-				"id": "aece31e8-ee12-4420-ac87-e26b405916df",
+				"id": "b48776ca-8df8-4dc6-9ecb-0f61342e8a5b",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -184,7 +181,7 @@
 		{
 			"listen": "test",
 			"script": {
-				"id": "72ac1e80-ec87-44c3-a86a-afd6fcb4610b",
+				"id": "438a8ea7-923a-41bd-b1a2-bea253cb6a1a",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -194,12 +191,12 @@
 	],
 	"variable": [
 		{
-			"id": "11151569-215a-441d-b425-e74eda463d18",
+			"id": "82383643-28be-4ef9-b5b9-8be9989ace64",
 			"key": "host",
 			"value": "localhost:8082"
 		},
 		{
-			"id": "077b726f-432a-44b5-b082-a72b32123980",
+			"id": "bc049ff2-81e1-48a8-9322-a8553b9e68c5",
 			"key": "bearer",
 			"value": ""
 		}
