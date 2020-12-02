@@ -12,7 +12,7 @@
 				"header": [
 					{
 						"key": "Authorization",
-						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImVtYWlsIjoiaGVsbG9AZ21haWwuY29tIiwicGFzc3dvcmRfaGFzaCI6IiQyYiQxMCQzZWtyRDRTWVN5SWs2TEV5d2kzVExlb2JDYU5YWG1kSDJkS25nMFBFMXNzbThxam9wS0l4MiIsImNyZWF0ZWRBdCI6IjIwMjAtMTEtMjlUMTk6NTQ6MjMuNTQ3WiIsInVwZGF0ZWRBdCI6IjIwMjAtMTEtMjlUMTk6NTQ6MjMuNTQ4WiJ9LCJpYXQiOjE2MDY3NjYwMjl9.ZZ94q0cTR0Jw8XTb98tdJ1UOykHSfuF3CE4XmAbG_3Q",
+						"value": "Bearer {{bearer}}",
 						"type": "text"
 					}
 				],
@@ -156,13 +156,11 @@
 					"raw": "{\n\t\"email\":\"hello@gmail.com\",\n\t\"password\":\"fancypass\"\n}"
 				},
 				"url": {
-					"raw": "{{host}}/api/v0/users/auth/login",
+					"raw": "{{host}}/users/auth/login",
 					"host": [
 						"{{host}}"
 					],
 					"path": [
-						"api",
-						"v0",
 						"users",
 						"auth",
 						"login"
@@ -196,9 +194,14 @@
 	],
 	"variable": [
 		{
-			"id": "a9168c12-9998-4f2c-a60b-b577eabc58ce",
+			"id": "11151569-215a-441d-b425-e74eda463d18",
 			"key": "host",
 			"value": "localhost:8082"
+		},
+		{
+			"id": "077b726f-432a-44b5-b082-a72b32123980",
+			"key": "bearer",
+			"value": ""
 		}
 	],
 	"protocolProfileBehavior": {}

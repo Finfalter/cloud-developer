@@ -1,3 +1,4 @@
+
 import express from 'express';
 import { sequelize } from './sequelize';
 import bodyParser from 'body-parser';
@@ -8,8 +9,9 @@ import { V0MODELS } from './controllers/v0/model.index';
 import { IndexRouter } from './controllers/v0/index.router';
 
 (async () => {
+  // https://github.com/RobinBuschmann/sequelize-typescript/issues/835
   await sequelize.addModels(V0MODELS);
-  //await sequelize.sync();
+  await sequelize.sync();
 
   // Init the Express application
   const app = express();
@@ -19,6 +21,8 @@ import { IndexRouter } from './controllers/v0/index.router';
   
   // Use the body parser middleware for post requests
   app.use(bodyParser.json());
+
+  app.use('/', IndexRouter)
 
   // @TODO1 IMPLEMENT A RESTFUL ENDPOINT
   // GET /filteredimage?image_url={{URL}}
