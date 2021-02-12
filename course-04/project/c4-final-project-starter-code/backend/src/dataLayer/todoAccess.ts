@@ -1,5 +1,6 @@
 import * as AWS  from 'aws-sdk'
-import * as AWSXRay from 'aws-xray-sdk'
+//import * as AWSXRay from 'aws-xray-sdk'
+const AWSXRay = require('aws-xray-sdk');
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 
 const XAWS = AWSXRay.captureAWS(AWS)
@@ -21,6 +22,19 @@ export class TodoAccess {
 	
 			return todo
 		}
+
+	async hasUser(userId: string) {
+		const result = await this.docClient.query({
+			TableName: this.todosTable,
+			KeyConditionExpression: 'userId = :userId',
+			ExpressionAttributeValues: {
+				':userId': userId
+			},
+			ScanIndexForward: false
+		}).promise()
+		console.log('Get user: ', result)
+		return result.Items.length > 0
+	}
 }
 
 function createDynamoDBClient() {
