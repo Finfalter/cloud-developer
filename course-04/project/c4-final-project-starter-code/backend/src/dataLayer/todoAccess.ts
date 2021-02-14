@@ -1,7 +1,7 @@
 import * as AWS  from 'aws-sdk'
 //import * as AWSXRay from 'aws-xray-sdk'
 const AWSXRay = require('aws-xray-sdk');
-import { DocumentClient } from 'aws-sdk/clients/dynamodb'
+import { DocumentClient, ItemList } from 'aws-sdk/clients/dynamodb'
 
 const XAWS = AWSXRay.captureAWS(AWS)
 
@@ -14,16 +14,7 @@ export class TodoAccess {
 			private readonly todosTable = process.env.TODOS_TABLE) {
 	}
 
-	async createTodo(todo: TodoItem): Promise<TodoItem> {
-			await this.docClient.put({
-				TableName: this.todosTable,
-				Item: todo
-			}).promise()
-	
-			return todo
-		}
-
-	async hasUser(userId: string) {
+	async getTodosOfUser(userId: string): Promise<TodoItem[]>{
 		const result = await this.docClient.query({
 			TableName: this.todosTable,
 			KeyConditionExpression: 'userId = :userId',
@@ -32,8 +23,20 @@ export class TodoAccess {
 			},
 			ScanIndexForward: false
 		}).promise()
-		console.log('Get user: ', result)
-		return result.Items.length > 0
+		return result.Items as TodoItem[]
+	}
+
+	async updateTodo(todo: TodoItem): Promise<TodoItem> {
+		return this.createTodo(todo)
+	}
+
+	async createTodo(todo: TodoItem): Promise<TodoItem> {
+		await this.docClient.put({
+			TableName: this.todosTable,
+			Item: todo
+		}).promise()
+
+		return todo
 	}
 }
 
