@@ -10,7 +10,7 @@
     "http-errors": "^1.7.2",
     "jsonwebtoken": "^8.5.1",
     "middy": "^0.27.0",
-    "serverless": "^2.23.0",
+    "serverless": "^2.25.0",
     "source-map-support": "^0.5.11",
     "uuid": "^3.3.2",
     "winston": "^3.2.1"
@@ -19,6 +19,7 @@
     "@types/aws-lambda": "^8.10.17",
     "@types/jsonwebtoken": "^8.3.2",
     "@types/node": "^10.14.4",
+    "aws-dynamodb": "^0.1.69",
     "aws-lambda": "^1.0.6",
     "aws-sdk": "^2.843.0",
     "aws-xray-sdk": "^2.5.0",

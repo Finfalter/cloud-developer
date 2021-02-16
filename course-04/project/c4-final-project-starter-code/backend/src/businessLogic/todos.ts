@@ -8,6 +8,18 @@ import { TodoItem } from '../models/TodoItem'
 
 const todoAccess = new TodoAccess()
 
+// export async function deleteTodo(
+//   userId: string,
+//   todoId: string): Promise<string> {
+//     return await todoAccess.deleteTodo(userId, todoId)
+//   }
+
+export async function deleteTodo(
+  userId: string,
+  todoId: string) : Promise<TodoItem>{
+    return await todoAccess.deleteTodo(userId, todoId)
+  }
+
 export async function updateTodo(
   todoId: string,
   updateTodoRequest: UpdateTodoRequest
@@ -22,7 +34,7 @@ export async function updateTodo(
     createdAt: new Date().toISOString(),
     name: updateTodoRequest.name,
     dueDate: updateTodoRequest.dueDate,
-    done: false
+    done: updateTodoRequest.done
   })
 }
 
