@@ -18,9 +18,59 @@ export class TodoAccess {
 
 	constructor(
 		private readonly docClient: DocumentClient = createDynamoDBClient(),
-		private readonly todosTable = process.env.TODOS_TABLE
-		//private readonly indexName = process.env.INDEX_NAME
-		) {}
+		private readonly s3 = new XAWS.S3({signatureVersion: 'v4'}),
+		private readonly todosTable = process.env.TODOS_TABLE,
+		private readonly bucketName = process.env.IMAGES_S3_BUCKET,
+		private urlExpiration = process.env.SIGNED_URL_EXPIRATION) {}
+
+
+	async setImageUrl(todoId: string, userId: string, url: string) 
+	{
+		var params = {
+			TableName: this.todosTable,
+			Key:{
+				"userId": userId,
+				"todoId": todoId
+			},
+			UpdateExpression: "set attachmentUrl=:url",
+			ExpressionAttributeValues:{
+				":url": url,
+
+			},
+			ReturnValues:"UPDATED_NEW"
+		};
+		
+		const result = this.docClient.update(params).promise();
+		return result.then((data: PromiseResult<DeleteItemOutput, AWSError>) => {
+			if (data.$response && data.$response.error != null) {
+				logger.warn('failure', {error: data.$response.error})
+				return undefined																//"failure"
+			} else 
+				return data.Attributes as unknown as TodoItem 	//"success"
+		})
+	}
+
+	async getUploadUrl(todoId: string) : Promise<string> {
+		return this.s3.getSignedUrl('putObject', {
+			Bucket: this.bucketName,
+			Key: todoId,
+			Expires: this.urlExpiration
+		})
+	}
+
+	async todoExists(userId: string, todoId: string) : Promise<Boolean>{
+			const result = await this.docClient.get({
+					TableName: this.todosTable,
+					Key: {
+						userId: userId,
+						todoId: todoId
+					}
+				})
+				.promise()
+		
+			console.log('Get group: ', result)
+			return !!result.Item
+		}
 
 	async getTodosOfUser(userId: string): Promise<TodoItem[]>{
 		const result = await this.docClient.query({
@@ -34,12 +84,36 @@ export class TodoAccess {
 		return result.Items as TodoItem[]
 	}
 
-	async updateTodo(todo: TodoItem): Promise<TodoItem> {
-		return this.createTodo(todo)
+	async updateTodo(todo: TodoItem): Promise<TodoItem> 
+	{
+		var params = {
+			TableName: this.todosTable,
+			Key:{
+				"userId": todo.userId,
+				"todoId": todo.todoId
+			},
+			UpdateExpression: "set #tdn=:n, dueDate=:dd, done=:d",
+			ExpressionAttributeValues:{
+				":n": todo.name,
+				":dd":todo.dueDate,
+				":d": todo.done
+			},
+			ExpressionAttributeNames:{"#tdn": "name"},
+			ReturnValues:"UPDATED_NEW"
+		};
+		
+		const result = this.docClient.update(params).promise();
+		return result.then((data: PromiseResult<DeleteItemOutput, AWSError>) => {
+			if (data.$response && data.$response.error != null) {
+				logger.warn('failure', {error: data.$response.error})
+				return undefined																//"failure"
+			} else 
+				return data.Attributes as unknown as TodoItem 	//"success"
+		})
 	}
 
-	async deleteTodo(userId: string, todoId: string) : Promise<TodoItem>{
-		//logger.info('deleting with', {userId: userId, todoId:todoId})
+	async deleteTodo(userId: string, todoId: string) : Promise<TodoItem>
+	{
 		var params = {
 			TableName: this.todosTable,
 			Key:{
@@ -53,63 +127,21 @@ export class TodoAccess {
 		return result.then((data: PromiseResult<DeleteItemOutput, AWSError>) => {
 			if (data.$response && data.$response.error != null) {
 				logger.warn('failure', {error: data.$response.error})
-				return undefined		   												//"failure"
+				return undefined								//"failure"
 			} else 
-				return data.Attributes as unknown as TodoItem //"success"
+				return data.Attributes as unknown as TodoItem 	//"success"
 		})
 	}
 
+	async createTodo(todo: TodoItem): Promise<TodoItem> 
+	{
+		await this.docClient.put({
+			TableName: this.todosTable,
+			Item: todo
+		}).promise()
 
-			// async deleteTodo(userId: string, todoId: string): Promise<string> {
-			// 	var params = {
-			// 		TableName:this.todosTable,
-			// 		Key:{
-			// 			"userId": "1",
-			// 			"todoId": todoId
-			// 		}
-			// 	};
-			// 	console.log("Attempting a conditional delete...");
-			// 	await this.docClient.delete(params, function(err, data) {
-			// 		if (err) {
-			// 			logger.warn("DeleteItem failed:" + JSON.stringify(err, null, 2));
-			// 			return 'failure'
-			// 		} else {
-			// 			logger.info("DeleteItem succeeded:" + JSON.stringify(data, null, 2));
-			// 			return 'success'
-			// 		}
-			// 	}).promise()
-			// 	return 'success'
-			// }
-			
-
-			// async deleteTodo(userId: string, todoId: string): Promise<string> {
-			// 	var params = {
-			// 		TableName:this.todosTable,
-			// 		Key:{
-			// 			"userId": "1",
-			// 			"todoId": todoId
-			// 		}
-			// 	};
-			// 	console.log("Attempting a conditional delete...");
-			// 	await this.docClient.delete(params, function(err, data) {
-			// 		if (err) {
-			// 			logger.warn("DeleteItem failed:" + JSON.stringify(err, null, 2));
-			// 			return 'failure'
-			// 		} else {
-			// 			logger.info("DeleteItem succeeded:" + JSON.stringify(data, null, 2));
-			// 			return 'success'
-			// 		}
-			// 	}).promise()
-			// 	return 'success'
-			// }
-			async createTodo(todo: TodoItem): Promise<TodoItem> {
-				await this.docClient.put({
-					TableName: this.todosTable,
-					Item: todo
-				}).promise()
-
-				return todo
-			}
+		return todo
+	}
 }
 
 function createDynamoDBClient() {

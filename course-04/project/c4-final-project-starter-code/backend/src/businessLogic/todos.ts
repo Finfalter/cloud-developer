@@ -8,17 +8,27 @@ import { TodoItem } from '../models/TodoItem'
 
 const todoAccess = new TodoAccess()
 
-// export async function deleteTodo(
-//   userId: string,
-//   todoId: string): Promise<string> {
-//     return await todoAccess.deleteTodo(userId, todoId)
-//   }
+
+export async function setImageUrl(todoId: string, userId: string, url: string) {
+  return await todoAccess.setImageUrl(todoId, userId,url);
+}
+
+export async function getUploadUrl(
+  todoId: string) : Promise<string> {
+  return await todoAccess.getUploadUrl(todoId)
+}
+
+export async function todoExists(
+  userId: string,
+  todoId: string) : Promise<Boolean>{
+    return await todoAccess.todoExists(userId, todoId)
+}
 
 export async function deleteTodo(
   userId: string,
   todoId: string) : Promise<TodoItem>{
     return await todoAccess.deleteTodo(userId, todoId)
-  }
+}
 
 export async function updateTodo(
   todoId: string,
@@ -46,12 +56,10 @@ export async function getTodosOfUser(
 
 export async function createTodo(
     createTodoRequest: CreateTodoRequest,
-    jwtToken: string
+    userId: string
   ): Promise<TodoItem> {
   
     const itemId = uuid.v4()
-    //const userId = parseUserId(jwtToken)
-    const userId = "1"
   
     return await todoAccess.createTodo({
 			userId: userId,

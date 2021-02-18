@@ -1,8 +1,8 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
 import 'source-map-support/register'
-//import { parseUserId } from '../../auth/utils'
 import { getTodosOfUser } from '../../businessLogic/todos'
 import { createLogger } from '../../utils/logger'
+import { getUserId } from '../utils'
 
 const logger = createLogger('getTodos')
 
@@ -11,16 +11,23 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
   logger.info('processing event', {key: event})
 
-  const authorization = event.headers.Authorization
-  const split = authorization.split(' ')
-  const jwtToken = split[1]
-  //const validUserId = parseUserId(jwtToken)
-  const validUserId = "1"
-  //const validUserId = await isUser(userId)  
+  const userId = getUserId(event)
 
-  logger.info('identified user', {key: validUserId})
+  if (!userId) {
+    return {
+      statusCode: 401,
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({
+        error: 'User is not authorized'
+      })
+    }
+  }
 
-  if (!validUserId) {
+  logger.info('identified user', {key: userId})
+
+  if (!userId) {
     return {
       statusCode: 404,
       headers: {
@@ -32,7 +39,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     }
   }
 
-  const todos4user = await getTodosOfUser(validUserId)
+  const todos4user = await getTodosOfUser(userId)
 
   return {
     statusCode: 201,

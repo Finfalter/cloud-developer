@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "A representation of a person, company, organization, or place",
+  "type": "object",
+  "properties": {
+   
+    "items": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/veggie" }
+    }
+  }, 
+	"required": ["items"],
+	"additionalProperties": false,
+  "definitions": {
+    "veggie": {
+      "type": "object",
+      "required": [ "todoId", "createdAt", "name", "dueDate", "done"],
+      "properties": {
+        "todoId": {"type": "string"},
+        "createdAt": {"type": "string"},
+        "name": {"type": "string"},
+        "dueDate": {"type": "string"},
+        "done": {"type": "boolean"},
+        "attachmentUrl": {"type": "string"}
+      }, 
+			"additionalProperties": false
+    }
+  }
+}

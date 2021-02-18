@@ -4,6 +4,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } f
 import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
 import { createTodo } from '../../businessLogic/todos'
 import { createLogger } from '../../utils/logger'
+import { getUserId } from '../utils'
 
 const logger = createLogger('createTodo')
 
@@ -13,11 +14,21 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const newTodo: CreateTodoRequest = JSON.parse(event.body)
 
   // TODO: Implement creating a new TODO item
-  const authorization = event.headers.Authorization
-  const split = authorization.split(' ')
-  const jwtToken = split[1]
+  const userId = getUserId(event)
 
-  const item = await createTodo(newTodo, jwtToken)
+  if (!userId) {
+    return {
+      statusCode: 401,
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({
+        error: 'User is not authorized'
+      })
+    }
+  }
+
+  const item = await createTodo(newTodo, userId)
 
   logger.info('created todo', {key: item})
 
