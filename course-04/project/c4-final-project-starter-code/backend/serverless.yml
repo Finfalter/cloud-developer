@@ -44,7 +44,7 @@ custom:
       info:
         version: v1.0.0
         title: Udagram API
-        description: Serverless application for images sharing
+        description: Serverless application for todo organization
     models:
       - name: CreateTodoRequest
         contentType: application/json
@@ -63,8 +63,8 @@ custom:
 
 functions:
 
-  # Auth:
-  #   handler: src/lambda/auth/auth0Authorizer.handler
+  Auth:
+    handler: src/lambda/auth/auth0Authorizer.handler
 
   # TODO: Configure this function
   GetTodos:
@@ -74,6 +74,7 @@ functions:
           method: get
           path: todos
           cors: true
+          authorizer: Auth
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -88,6 +89,7 @@ functions:
           method: post
           path: todos
           cors: true
+          authorizer: Auth
           reqValidatorName: RequestBodyValidator
           documentation:
             summary: Get all Todos of a user
@@ -109,6 +111,7 @@ functions:
           method: patch
           path: todos/{todoId}
           cors: true
+          authorizer: Auth
           reqValidatorName: RequestBodyValidator
           documentation:
             summary: Get all Todos of a user
@@ -130,6 +133,7 @@ functions:
           method: delete
           path: todos/{todoId}
           cors: true
+          authorizer: Auth
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -144,6 +148,7 @@ functions:
           method: post
           path: todos/{todoId}/attachment
           cors: true
+          authorizer: Auth
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -153,6 +158,20 @@ functions:
 
 resources:
   Resources:
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        PolicyDocument:
+          Id: MyPolicy
+          Version: "2012-10-17"
+          Statement:
+            - Sid: PublicReadForGetBucketObjects
+              Effect: Allow
+              Principal: '*'
+              Action: 's3:GetObject'
+              Resource: 'arn:aws:s3:::${self:provider.environment.TODOS_S3_BUCKET}/*'
+        Bucket: !Ref AttachmentsBucket
+
     AttachmentsBucket:
       Type: AWS::S3::Bucket
       Properties:
