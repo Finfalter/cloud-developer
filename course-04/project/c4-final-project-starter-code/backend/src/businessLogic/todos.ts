@@ -14,7 +14,7 @@ export async function setImageUrl(todoId: string, userId: string, url: string) {
 }
 
 export async function getUploadUrl(
-  todoId: string) : Promise<string> {
+  todoId: string) {
   return await todoAccess.getUploadUrl(todoId)
 }
 
@@ -31,13 +31,11 @@ export async function deleteTodo(
 }
 
 export async function updateTodo(
+  userId: string,
   todoId: string,
   updateTodoRequest: UpdateTodoRequest
-): Promise<TodoItem> {
-
-  //const userId = parseUserId(jwtToken)
-  const userId = "1"
-
+): Promise<TodoItem> 
+{
   return await todoAccess.updateTodo({
     userId: userId,
     todoId: todoId,

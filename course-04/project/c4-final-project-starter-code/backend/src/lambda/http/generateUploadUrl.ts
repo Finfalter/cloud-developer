@@ -16,7 +16,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     return {
       statusCode: 401,
       headers: {
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true
       },
       body: JSON.stringify({
         error: 'User is not authorized'
@@ -29,6 +30,10 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   if (!validTodoId) {
     return {
       statusCode: 404,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true
+      },
       body: JSON.stringify({
         error: 'Todo does not exist'
       })
@@ -40,6 +45,10 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
   return {
     statusCode: 201,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true
+    },
     body: JSON.stringify({
       uploadUrl: `https://${bucketName}.s3.amazonaws.com/${todoId}`
     })

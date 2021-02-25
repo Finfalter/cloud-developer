@@ -19,7 +19,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     return {
       statusCode: 401,
       headers: {
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin' : '*',      // Required for CORS support to work
+        'Access-Control-Allow-Credentials' : true // Required for cookies, authorization headers with HTTPS 
       },
       body: JSON.stringify({
         error: 'User is not authorized'
@@ -30,7 +31,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const todoId = event.pathParameters.todoId
   const updatedTodo: UpdateTodoRequest = JSON.parse(event.body)
   
-  const result = await updateTodo(todoId, updatedTodo)
+  const result = await updateTodo(userId, todoId, updatedTodo)
 
   logger.info('updated todo', {key: result})
 

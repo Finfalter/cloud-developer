@@ -1,4 +1,5 @@
 import * as AWS  from 'aws-sdk'
+//import { Integer } from 'aws-sdk/clients/apigateway';
 //import * as AWSXRay from 'aws-xray-sdk'
 const AWSXRay = require('aws-xray-sdk');
 import { DocumentClient, DeleteItemOutput} from 'aws-sdk/clients/dynamodb'
@@ -20,8 +21,8 @@ export class TodoAccess {
 		private readonly docClient: DocumentClient = createDynamoDBClient(),
 		private readonly s3 = new XAWS.S3({signatureVersion: 'v4'}),
 		private readonly todosTable = process.env.TODOS_TABLE,
-		private readonly bucketName = process.env.IMAGES_S3_BUCKET,
-		private urlExpiration = process.env.SIGNED_URL_EXPIRATION) {}
+		private readonly bucketName = process.env.TODOS_S3_BUCKET,
+		private readonly urlExpiration = process.env.SIGNED_URL_EXPIRATION) {}
 
 
 	async setImageUrl(todoId: string, userId: string, url: string) 
@@ -44,17 +45,17 @@ export class TodoAccess {
 		return result.then((data: PromiseResult<DeleteItemOutput, AWSError>) => {
 			if (data.$response && data.$response.error != null) {
 				logger.warn('failure', {error: data.$response.error})
-				return undefined																//"failure"
+				return undefined								//"failure"
 			} else 
 				return data.Attributes as unknown as TodoItem 	//"success"
 		})
 	}
 
-	async getUploadUrl(todoId: string) : Promise<string> {
+	async getUploadUrl(todoId: string) {
 		return this.s3.getSignedUrl('putObject', {
 			Bucket: this.bucketName,
 			Key: todoId,
-			Expires: this.urlExpiration
+			Expires: parseInt(this.urlExpiration)
 		})
 	}
 
@@ -106,7 +107,7 @@ export class TodoAccess {
 		return result.then((data: PromiseResult<DeleteItemOutput, AWSError>) => {
 			if (data.$response && data.$response.error != null) {
 				logger.warn('failure', {error: data.$response.error})
-				return undefined																//"failure"
+				return undefined								//"failure"
 			} else 
 				return data.Attributes as unknown as TodoItem 	//"success"
 		})
