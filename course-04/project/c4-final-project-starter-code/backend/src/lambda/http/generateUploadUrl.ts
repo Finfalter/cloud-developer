@@ -1,5 +1,5 @@
 import 'source-map-support/register'
-import { todoExists, getUploadUrl, setImageUrl } from '../../businessLogic/todos'
+import { todoExists, signUrl, setImageUrl } from '../../businessLogic/todos'
 import { getUserId } from '../utils'
 
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
@@ -40,8 +40,10 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     }
   }
   
-  const url = await getUploadUrl(todoId)
-  setImageUrl(todoId, userId, url)
+  const uploadUrl = await signUrl(todoId)
+
+  const url : string = `https://${bucketName}.s3.amazonaws.com/${todoId}`
+  await setImageUrl(todoId, userId, url)
 
   return {
     statusCode: 201,
@@ -50,7 +52,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       'Access-Control-Allow-Credentials': true
     },
     body: JSON.stringify({
-      uploadUrl: `https://${bucketName}.s3.amazonaws.com/${todoId}`
+      uploadUrl: uploadUrl
     })
   }
 }

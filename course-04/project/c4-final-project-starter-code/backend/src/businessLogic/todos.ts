@@ -11,9 +11,9 @@ export async function setImageUrl(todoId: string, userId: string, url: string) {
   return await todoAccess.setImageUrl(todoId, userId,url);
 }
 
-export async function getUploadUrl(
+export async function signUrl(
   todoId: string) {
-  return await todoAccess.getUploadUrl(todoId)
+  return await todoAccess.signUrl(todoId)
 }
 
 export async function todoExists(

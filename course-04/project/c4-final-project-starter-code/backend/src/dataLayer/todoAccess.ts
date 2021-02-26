@@ -51,7 +51,7 @@ export class TodoAccess {
 		})
 	}
 
-	async getUploadUrl(todoId: string) {
+	async signUrl(todoId: string) {
 		return this.s3.getSignedUrl('putObject', {
 			Bucket: this.bucketName,
 			Key: todoId,
