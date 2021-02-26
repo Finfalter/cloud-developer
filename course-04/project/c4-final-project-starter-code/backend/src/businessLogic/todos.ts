@@ -4,10 +4,8 @@ import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
 import { CreateTodoRequest } from '../requests/CreateTodoRequest'
 import { TodoAccess } from '../dataLayer/todoAccess'
 import { TodoItem } from '../models/TodoItem'
-//import { parseUserId } from '../auth/utils'
 
 const todoAccess = new TodoAccess()
-
 
 export async function setImageUrl(todoId: string, userId: string, url: string) {
   return await todoAccess.setImageUrl(todoId, userId,url);
@@ -57,11 +55,11 @@ export async function createTodo(
     userId: string
   ): Promise<TodoItem> {
   
-    const itemId = uuid.v4()
+    const todoId = uuid.v4()
   
     return await todoAccess.createTodo({
 			userId: userId,
-			todoId: itemId,
+			todoId: todoId,
 			createdAt: new Date().toISOString(),
 			name: createTodoRequest.name,
 			dueDate: createTodoRequest.dueDate,

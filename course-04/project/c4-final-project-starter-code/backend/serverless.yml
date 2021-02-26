@@ -26,7 +26,7 @@ provider:
     TODOS_TABLE: Todos-${self:provider.stage}
     INDEX_NAME: CreatedAtIndex
     TODOS_S3_BUCKET: serverless-udacity-todos-${self:provider.stage}
-    SIGNED_URL_EXPIRATION: 300
+    SIGNED_URL_EXPIRATION: 60000
 
   iamRoleStatements:
     - Effect: Allow
@@ -80,6 +80,10 @@ functions:
         Action:
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+      - Effect: Allow
+        Action:
+          - s3:GetObject
+        Resource: arn:aws:s3:::${self:provider.environment.TODOS_S3_BUCKET}/*
 
   # TODO: Configure this function
   CreateTodo:
