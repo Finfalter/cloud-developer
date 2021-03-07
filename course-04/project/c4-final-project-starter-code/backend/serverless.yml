@@ -7,6 +7,7 @@ plugins:
   - serverless-iam-roles-per-function
   - serverless-aws-documentation
   - serverless-dynamodb-local
+#  - serverless-offline-dynamodb-streams
   - serverless-offline
 
 package:
@@ -37,6 +38,7 @@ provider:
 
 custom:
   serverless-offline:
+    host: 0.0.0.0
     httpPort: 3003
 
   documentation:
@@ -57,16 +59,53 @@ custom:
     stages:
       - dev
     start:
+      host: localhost
       port: 8000
       inMemory: true
       migrate: true
 
+  # dynamodbStream:
+  #   stages:
+  #     - dev
+  #   host: dynamodb
+  #   port: 8000
+  #   region: ${self:provider.region}
+  #   streams:
+  #     - table: ${self:provider.environment.TODOS_TABLE}
+  #       functions:
+  #         - GetTodos
+  #         - ElasticSearchSync
+
+  # dynamodbStream:
+  #   host: localhost
+  #   port: 8000
+  #   streams:
+  #     - table: ImagesDynamoDBTable
+  #       functions:
+  #         - src/lambda/dynamoDb/elasticSearchSync.handler
+
+  # serverless-offline-dynamodb-streams:
+  #   apiVersion: '2013-12-02'
+  #   endpoint: http://0.0.0.0:8000
+    # region: eu-west-1
+    # accessKeyId: root
+    # secretAccessKey: root
+    # skipCacheInvalidation: false
+    # readInterval: 500
+
 functions:
+  ElasticSearchSync:
+    handler: src/lambda/dynamoDb/elasticSearchSync.handler
+    # events:
+    #   - stream:
+    #       enabled: true
+    #       type: dynamodb
+    #       arn:
+    #         !GetAtt TodosDynamoDBTable.StreamArn
 
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
 
-  # TODO: Configure this function
   GetTodos:
     handler: src/lambda/http/getTodos.handler
     events:
@@ -85,7 +124,6 @@ functions:
           - s3:GetObject
         Resource: arn:aws:s3:::${self:provider.environment.TODOS_S3_BUCKET}/*
 
-  # TODO: Configure this function
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
     events:
@@ -107,7 +145,6 @@ functions:
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
-  # TODO: Configure this function
   UpdateTodo:
     handler: src/lambda/http/updateTodo.handler
     events:
@@ -129,7 +166,6 @@ functions:
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
-  # TODO: Configure this function
   DeleteTodo:
     handler: src/lambda/http/deleteTodo.handler
     events:
@@ -144,7 +180,6 @@ functions:
           - dynamodb:DeleteItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
-  # TODO: Configure this function
   GenerateUploadUrl:
     handler: src/lambda/http/generateUploadUrl.handler
     events:
@@ -164,6 +199,15 @@ functions:
           - s3:PutObject
           - s3:GetObject
         Resource: arn:aws:s3:::${self:provider.environment.TODOS_S3_BUCKET}/*
+
+  # SyncWithElasticsearch:
+  #   environment:
+  #     ES_ENDPOINT: !GetAtt TodoSearch.DomainEndpoint
+  #   handler: src/lambda/dynamoDb/elasticSearchSync.handler
+  #   events:
+  #     - stream:
+  #         type: dynamodb
+  #         arn: !GetAtt TodosDynamoDBTable.StreamArn
 
 resources:
   Resources:
@@ -222,7 +266,6 @@ resources:
         ValidateRequestBody: true
         ValidateRequestParameters: false
 
-    # TODO: Add any necessary AWS resources
     TodosDynamoDBTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -239,6 +282,8 @@ resources:
           - AttributeName: todoId
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
+        # StreamSpecification:
+        #   StreamViewType: NEW_IMAGE
         TableName: ${self:provider.environment.TODOS_TABLE}
         LocalSecondaryIndexes:
           - IndexName: ${self:provider.environment.INDEX_NAME}
@@ -249,3 +294,19 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL # What attributes will be copied to an index
+
+    # TodoSearch:
+    #   Type: AWS::Elasticsearch::Domain
+    #   Properties:
+    #     ElasticsearchVersion: '7.11'
+    #     DomainName: images-search-${self:provider.stage}
+    #     ElasticsearchClusterConfig:
+    #       DedicatedMasterEnabled: false
+    #       InstanceCount: '1'
+    #       ZoneAwarenessEnabled: false
+    #       InstanceType: t2.small.elasticsearch
+    #     EBSOptions:
+    #       EBSEnabled: true
+    #       Iops: 0
+    #       VolumeSize: 10
+    #       VolumeType: 'gp2'
