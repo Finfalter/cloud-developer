@@ -1,61 +1,38 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
-import { CreateTodoRequest } from '../../../requests/CreateTodoRequest'
+import { APIGatewayProxyResult } from 'aws-lambda'
+import { testEvent, testTodoItem, createLogger} from './test_utils.test'
+
 const assert = require("assert");
 const sinon = require("sinon");
+
 const todos = require('../../../businessLogic/todos');
-const lambdas = require("../createTodo");
-import { TodoItem } from '../../../models/TodoItem'
+const logger = require('../../../utils/logger');
 const utils = require('../../utils');
-
-const myRequest: CreateTodoRequest = {
-	name: 'fake',
-	dueDate: '2222-02-22'
-}
-
-const myEvent: APIGatewayProxyEvent = {
-	body: JSON.stringify(myRequest),
-	headers: {'Authorization': ""},
-	multiValueHeaders: {},
-	httpMethod: '',
-	isBase64Encoded: false,
-	path: null,
-	pathParameters: null,
-	queryStringParameters: null,
-	multiValueQueryStringParameters: null,
-	stageVariables: null,
-	requestContext: null,
-	resource: ''
-};
-
-const todoItem: TodoItem = {
-  userId: "123",
-  todoId: "321",
-  createdAt: '2020-01-01',
-  name: myRequest.name,
-  dueDate: myRequest.dueDate,
-  done: false
-}
 
 describe("createTodo", function () {
 	let getUserIdStub;
 	let createTodoStub;
+  let createLoggerStub;
 
 	beforeEach(function () {
 		getUserIdStub = sinon.stub(utils, "getUserId");
-		createTodoStub= sinon.stub(todos, "createTodo");
+		createTodoStub = sinon.stub(todos, "createTodo");
+    createLoggerStub = sinon.stub(logger, "createLogger").returns(createLogger('createTodo'));
 	});
 
 	afterEach(function () {
 		getUserIdStub.restore();
 		createTodoStub.restore();
+    createLoggerStub.restore();
 	});
 
 	describe("when the user id is invalid", function () {
-		it("should return a 401 'User is not authorized'", async function () {
+		it("shall respond with a 401, 'User is not authorized'", async function () {
 			getUserIdStub.returns(undefined);
 
+			// embedded require to be able to mock createLogger
+			const lambdas = require("../createTodo");
 			// calling the handler
-			const result : APIGatewayProxyResult = await lambdas.handler(myEvent);
+			const result : APIGatewayProxyResult = await lambdas.handler(testEvent);
 
 			// Assertions
 			assert.equal(getUserIdStub.calledOnce, true);
@@ -67,16 +44,18 @@ describe("createTodo", function () {
 	describe("when the user id is valid", function () {
 		it("a new todo is created and returned in a 201 response", async function () {
 			getUserIdStub.returns("123");
-			createTodoStub.returns(Promise.resolve(todoItem));
+			createTodoStub.returns(Promise.resolve(testTodoItem));
 
+			// embedded require to be able to mock createLogger
+			const lambdas = require("../createTodo");
 			// calling the handler
-			const result : APIGatewayProxyResult = await lambdas.handler(myEvent);
+			const result : APIGatewayProxyResult = await lambdas.handler(testEvent);
 
 			// Assertions
 			assert.equal(getUserIdStub.calledOnce, true);
 			assert.equal(result.statusCode, 201);
 			assert.equal(result.body, JSON.stringify({
-				item : todoItem
+				item : testTodoItem
 			}));
 
 		}); 
