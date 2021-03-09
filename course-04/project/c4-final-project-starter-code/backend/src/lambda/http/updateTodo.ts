@@ -12,7 +12,6 @@ const logger = createLogger('updateTodo')
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.info('processing event', {key: event})
 
-  // TODO: Update a TODO item with the provided id using values in the "updatedTodo" object
   const userId = getUserId(event)
 
   if (!userId) {

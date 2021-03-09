@@ -26,7 +26,7 @@ describe("createTodo", function () {
 	});
 
 	describe("when the user id is invalid", function () {
-		it("shall respond with a 401, 'User is not authorized'", async function () {
+		it("respond with a 401, 'User is not authorized'", async function () {
 			getUserIdStub.returns(undefined);
 
 			// embedded require to be able to mock createLogger

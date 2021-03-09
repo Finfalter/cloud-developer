@@ -15,6 +15,7 @@ export function createLogger(loggerName: string) {
 }
 
 const todoId = '321';
+const validUserId = '123';
 
 const testRequest: CreateTodoRequest = {
 	name: 'fake',
@@ -37,7 +38,7 @@ const testEvent: APIGatewayProxyEvent = {
 };
 
 const testTodoItem: TodoItem = {
-  userId: "123",
+  userId: validUserId,
   todoId: todoId,
   createdAt: '2020-01-01',
   name: testRequest.name,
@@ -45,4 +46,4 @@ const testTodoItem: TodoItem = {
   done: false
 }
 
-export { testRequest, testEvent, testTodoItem };
+export { testRequest, testEvent, testTodoItem, validUserId };

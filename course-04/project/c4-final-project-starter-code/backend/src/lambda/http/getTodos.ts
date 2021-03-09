@@ -7,8 +7,6 @@ import { getUserId } from '../utils'
 const logger = createLogger('getTodos')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  // TODO: Get all TODO items for a current user
-
   logger.info('processing event', {key: event})
 
   const userId = getUserId(event)
@@ -26,18 +24,6 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   }
 
   logger.info('identified user', {key: userId})
-
-  if (!userId) {
-    return {
-      statusCode: 404,
-      headers: {
-        'Access-Control-Allow-Origin': '*'
-      },
-      body: JSON.stringify({
-        error: 'User does not exist'
-      })
-    }
-  }
 
   const todos4user = await getTodosOfUser(userId)
 

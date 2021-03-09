@@ -8,20 +8,20 @@ const todos = require('../../../businessLogic/todos');
 const logger = require('../../../utils/logger');
 const utils = require('../../utils');
 
-describe("deleteTodo", function () {
+describe("getTodos", function () {
 	let getUserIdStub;
-	let deleteTodoStub;
-  	let createLoggerStub;
+	let getTodosOfUser;
+  let createLoggerStub;
 
 	beforeEach(function () {
 		getUserIdStub = sinon.stub(utils, "getUserId");
-		deleteTodoStub = sinon.stub(todos, "deleteTodo");
-    createLoggerStub = sinon.stub(logger, "createLogger").returns(createLogger('deleteTodo'));
+		getTodosOfUser = sinon.stub(todos, "getTodosOfUser");
+    createLoggerStub = sinon.stub(logger, "createLogger").returns(createLogger('getTodos'));
 	});
 
 	afterEach(function () {
 		getUserIdStub.restore();
-		deleteTodoStub.restore();
+		getTodosOfUser.restore();
     createLoggerStub.restore();
 	});
 
@@ -30,7 +30,7 @@ describe("deleteTodo", function () {
 			getUserIdStub.returns(undefined);
 
 			// embedded require to be able to mock createLogger
-			const lambdas = require("../deleteTodo");
+			const lambdas = require("../getTodos");
 			// calling the handler
 			const result : APIGatewayProxyResult = await lambdas.handler(testEvent);
 
@@ -41,67 +41,61 @@ describe("deleteTodo", function () {
 		});
 	});
 
-	describe("when the todo to delete does not exist", function () {
-		it("respond with a 404, Not Found, and an empty body ", async function () {
+	describe("when the user id is valid", function () {
+		it("respond with a 201, Created, and return an empty body in case no todos are assigned to given user", async function () {
 			getUserIdStub.returns(validUserId);
-			deleteTodoStub.returns(Promise.resolve(undefined));
+			getTodosOfUser.returns(Promise.resolve([]));
 
 			// embedded require to be able to mock createLogger
-			const lambdas = require("../deleteTodo");
+			const lambdas = require("../getTodos");
 			// calling the handler
 			const result : APIGatewayProxyResult = await lambdas.handler(testEvent);
 
 			// Assertions
 			assert.equal(getUserIdStub.calledOnce, true);
-			assert.equal(deleteTodoStub.calledOnce, true);
-			assert.equal(result.statusCode, 404);
-			assert.equal(result.body, '');
-		}); 
-	});
-
-	describe("when a todo was deleted with the correct todoId", function () {
-		it("respond with a 201, Created, and an empty body ", async function () {
-			getUserIdStub.returns(validUserId);
-			deleteTodoStub.returns(Promise.resolve(testTodoItem));
-
-			// embedded require to be able to mock createLogger
-			const lambdas = require("../deleteTodo");
-			// calling the handler
-			const result : APIGatewayProxyResult = await lambdas.handler(testEvent);
-
-			// Assertions
-			assert.equal(getUserIdStub.calledOnce, true);
-			assert.equal(deleteTodoStub.calledOnce, true);
+			assert.equal(getTodosOfUser.calledOnce, true);
 			assert.equal(result.statusCode, 201);
-			assert.equal(result.body, '');
+			assert.equal(result.body, '{"items":[]}');
 		}); 
-	});
 
-	describe("when a todo was deleted with with an unsuspected todoId", function () {
-		it("respond with a 500, Internal Server Error, and an empty body ", async function () {
-			const spectialTestTodoItem = {
-				userId: validUserId,
-				todoId: 911,
-				createdAt: '2020-01-01',
-				name: 'nevermind',
-				dueDate: '2020-01-02',
-				done: false
-			}
-
+		it("respond with a 201, Created, and return the one todo which is assigned to given user", async function () {
 			getUserIdStub.returns(validUserId);
-			deleteTodoStub.returns(Promise.resolve(spectialTestTodoItem));
+			getTodosOfUser.returns(Promise.resolve(testTodoItem));
 
 			// embedded require to be able to mock createLogger
-			const lambdas = require("../deleteTodo");
+			const lambdas = require("../getTodos");
 			// calling the handler
 			const result : APIGatewayProxyResult = await lambdas.handler(testEvent);
 
 			// Assertions
 			assert.equal(getUserIdStub.calledOnce, true);
-			assert.equal(deleteTodoStub.calledOnce, true);
-			assert.equal(result.statusCode, 500);
-			assert.equal(result.body, '');
+			assert.equal(getTodosOfUser.calledOnce, true);
+			assert.equal(result.statusCode, 201);
+			assert.equal(result.body, JSON.stringify({
+				items : testTodoItem
+			}));
 		}); 
+
+		it("respond with a 201, Created, and return multiple todos being assigned to given user", async function () {
+			const multipleItems = [testTodoItem, testTodoItem]
+			getUserIdStub.returns(validUserId);
+			getTodosOfUser.returns(Promise.resolve(multipleItems));
+
+			// embedded require to be able to mock createLogger
+			const lambdas = require("../getTodos");
+			// calling the handler
+			const result : APIGatewayProxyResult = await lambdas.handler(testEvent);
+
+			// Assertions
+			assert.equal(getUserIdStub.calledOnce, true);
+			assert.equal(getTodosOfUser.calledOnce, true);
+			assert.equal(result.statusCode, 201);
+			assert.equal(result.body, JSON.stringify({
+				items : multipleItems
+			}));
+		});
+
 	});
+
 
 });

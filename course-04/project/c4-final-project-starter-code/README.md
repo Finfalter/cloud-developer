@@ -1,7 +1,3 @@
-# Serverless TODO
-
-To implement this project, you need to implement a simple TODO application using AWS Lambda and Serverless framework. Search for all comments starting with the `TODO:` in the code to find the placeholders that you need to implement.
-
 # Functionality of the application
 
 This application will allow creating/removing/updating/fetching TODO items. Each TODO item can optionally have an attachment image. Each user only has access to TODO items that he/she has created.
@@ -17,18 +13,13 @@ The application should store TODO items, and each TODO item contains the followi
 * `done` (boolean) - true if an item was completed, false otherwise
 * `attachmentUrl` (string) (optional) - a URL pointing to an image attached to a TODO item
 
-You might also store an id of a user who created a TODO item.
+# Implemented functions
 
+* `Auth` - this function implements a custom authorizer for API Gateway that is added to all other functions.
 
-# Functions to be implemented
+* `GetTodos` - returns all TODOs for a current user. A user id can be extracted from a JWT token that is sent by the frontend
 
-To implement this project, you need to implement the following functions and configure them in the `serverless.yml` file:
-
-* `Auth` - this function should implement a custom authorizer for API Gateway that should be added to all other functions.
-
-* `GetTodos` - should return all TODOs for a current user. A user id can be extracted from a JWT token that is sent by the frontend
-
-It should return data that looks like this:
+It returns data that looks like this:
 
 ```json
 {
@@ -53,7 +44,7 @@ It should return data that looks like this:
 }
 ```
 
-* `CreateTodo` - should create a new TODO for a current user. A shape of data send by a client application to this function can be found in the `CreateTodoRequest.ts` file
+* `CreateTodo` - creates a new TODO for a current user. A shape of data send by a client application to this function can be found in the `CreateTodoRequest.ts` file
 
 It receives a new TODO item to be created in JSON format that looks like this:
 
@@ -67,7 +58,7 @@ It receives a new TODO item to be created in JSON format that looks like this:
 }
 ```
 
-It should return a new TODO item that looks like this:
+It returns a new TODO item that looks like this:
 
 ```json
 {
@@ -82,7 +73,7 @@ It should return a new TODO item that looks like this:
 }
 ```
 
-* `UpdateTodo` - should update a TODO item created by a current user. A shape of data send by a client application to this function can be found in the `UpdateTodoRequest.ts` file
+* `UpdateTodo` - updates a TODO item created by a current user. A shape of data send by a client application to this function can be found in the `UpdateTodoRequest.ts` file
 
 It receives an object that contains three fields that can be updated in a TODO item:
 
@@ -96,28 +87,21 @@ It receives an object that contains three fields that can be updated in a TODO i
 
 The id of an item that should be updated is passed as a URL parameter.
 
-It should return an empty body.
+It returns an empty body.
 
-* `DeleteTodo` - should delete a TODO item created by a current user. Expects an id of a TODO item to remove.
+* `DeleteTodo` - deletes a TODO item created by a current user. Expects an id of a TODO item to remove.
 
-It should return an empty body.
+Returns an empty body.
 
 * `GenerateUploadUrl` - returns a pre-signed URL that can be used to upload an attachment file for a TODO item.
 
-It should return a JSON object that looks like this:
+Returns a JSON object that looks like this:
 
 ```json
 {
   "uploadUrl": "https://s3-bucket-name.s3.eu-west-2.amazonaws.com/image.png"
 }
 ```
-
-All functions are already connected to appropriate events from API Gateway.
-
-An id of a user can be extracted from a JWT token passed by a client.
-
-You also need to add any necessary resources to the `resources` section of the `serverless.yml` file such as DynamoDB table and S3 bucket.
-
 
 # Frontend
 
