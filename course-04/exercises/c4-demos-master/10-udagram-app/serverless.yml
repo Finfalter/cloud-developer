@@ -369,7 +369,7 @@ resources:
       Type: AWS::Elasticsearch::Domain
       Properties:
         ElasticsearchVersion: '7.11'
-        DomainName: todo-search-${self:provider.stage}
+        DomainName: images-search-${self:provider.stage}
         ElasticsearchClusterConfig:
           DedicatedMasterEnabled: false
           InstanceCount: '1'

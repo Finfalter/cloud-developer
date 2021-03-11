@@ -7,7 +7,7 @@ plugins:
   - serverless-iam-roles-per-function
   - serverless-aws-documentation
   - serverless-dynamodb-local
-#  - serverless-offline-dynamodb-streams
+  - serverless-offline-dynamodb-streams
   - serverless-offline
 
 package:
@@ -35,10 +35,17 @@ provider:
         - codedeploy:*
       Resource:
         - '*'
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeStream
+        - dynamodb:GetRecords
+        - dynamodb:GetShardIterator
+        - dynamodb:ListStreams
+      Resource: arn:aws:dynamodb:*:*:table/${self:provider.environment.TODOS_TABLE}
 
 custom:
   serverless-offline:
-    host: 0.0.0.0
+    #host: 0.0.0.0
     httpPort: 3003
 
   documentation:
@@ -64,21 +71,23 @@ custom:
       inMemory: true
       migrate: true
 
-  # dynamodbStream:
-  #   stages:
-  #     - dev
-  #   host: dynamodb
-  #   port: 8000
-  #   region: ${self:provider.region}
-  #   streams:
-  #     - table: ${self:provider.environment.TODOS_TABLE}
-  #       functions:
-  #         - GetTodos
-  #         - ElasticSearchSync
+  dynamodbStream:
+    stages:
+      - dev
+    host: dynamodb
+    port: 8000
+    pollForever: true
+    region: ${self:provider.region}
+    streams:
+      - table: ${self:provider.environment.TODOS_TABLE}
+        functions:
+          - ElasticSearchSync
+          - GetTodos
 
   # dynamodbStream:
   #   host: localhost
   #   port: 8000
+  #   pollForever: true
   #   streams:
   #     - table: ImagesDynamoDBTable
   #       functions:
@@ -96,6 +105,12 @@ custom:
 functions:
   ElasticSearchSync:
     handler: src/lambda/dynamoDb/elasticSearchSync.handler
+    events:
+      - stream:
+        arn:
+        Fn::GetAtt:
+          - ${self:provider.environment.TODOS_TABLE}
+          - Arn
     # events:
     #   - stream:
     #       enabled: true
@@ -282,8 +297,8 @@ resources:
           - AttributeName: todoId
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
-        # StreamSpecification:
-        #   StreamViewType: NEW_IMAGE
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
         TableName: ${self:provider.environment.TODOS_TABLE}
         LocalSecondaryIndexes:
           - IndexName: ${self:provider.environment.INDEX_NAME}
