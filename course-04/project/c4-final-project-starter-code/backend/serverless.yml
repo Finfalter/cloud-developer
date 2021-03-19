@@ -7,7 +7,7 @@ plugins:
   - serverless-iam-roles-per-function
   - serverless-aws-documentation
   - serverless-dynamodb-local
-  - serverless-offline-dynamodb-streams
+  - serverless-plugin-offline-dynamodb-stream
   - serverless-offline
 
 package:
@@ -17,7 +17,7 @@ provider:
   name: aws
   runtime: nodejs12.x
   stage: ${opt:stage, 'dev'}
-  region: ${opt:region, 'eu-central-1'}
+  region: localhost #${opt:region, 'eu-central-1'}
 
   # tracing:
   #   lambda: true
@@ -74,7 +74,7 @@ custom:
   dynamodbStream:
     stages:
       - dev
-    host: dynamodb
+    host: localhost
     port: 8000
     pollForever: true
     region: ${self:provider.region}
@@ -82,7 +82,6 @@ custom:
       - table: ${self:provider.environment.TODOS_TABLE}
         functions:
           - ElasticSearchSync
-          - GetTodos
 
   # dynamodbStream:
   #   host: localhost
@@ -105,18 +104,27 @@ custom:
 functions:
   ElasticSearchSync:
     handler: src/lambda/dynamoDb/elasticSearchSync.handler
-    events:
-      - stream:
-        arn:
-        Fn::GetAtt:
-          - ${self:provider.environment.TODOS_TABLE}
-          - Arn
+    # events:
+    #   - stream:
+    #     arn:
+    #     Fn::GetAtt:
+    #       - ${self:provider.environment.TODOS_TABLE}
+    #       - Arn
+    
     # events:
     #   - stream:
     #       enabled: true
     #       type: dynamodb
     #       arn:
     #         !GetAtt TodosDynamoDBTable.StreamArn
+
+  ElasticSearchSearch:
+    handler: src/lambda/dynamoDb/elasticSearchSync.handler
+    events:
+      - http:
+          method: get
+          path: search
+          cors: true
 
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
@@ -138,6 +146,20 @@ functions:
         Action:
           - s3:GetObject
         Resource: arn:aws:s3:::${self:provider.environment.TODOS_S3_BUCKET}/*
+
+  CreateName:
+    handler: src/lambda/http/createName.handler
+    events:
+      - http:
+          method: post
+          path: names
+          cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/items
 
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
@@ -281,6 +303,24 @@ resources:
         ValidateRequestBody: true
         ValidateRequestParameters: false
 
+    EventTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: name
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+          - AttributeName: name
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TableName: items
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
+
     TodosDynamoDBTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -297,9 +337,9 @@ resources:
           - AttributeName: todoId
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.TODOS_TABLE}
         StreamSpecification:
           StreamViewType: NEW_IMAGE
-        TableName: ${self:provider.environment.TODOS_TABLE}
         LocalSecondaryIndexes:
           - IndexName: ${self:provider.environment.INDEX_NAME}
             KeySchema:

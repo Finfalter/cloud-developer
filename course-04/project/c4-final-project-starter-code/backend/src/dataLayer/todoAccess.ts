@@ -1,6 +1,4 @@
 import * as AWS  from 'aws-sdk'
-//import { Integer } from 'aws-sdk/clients/apigateway';
-//import * as AWSXRay from 'aws-xray-sdk'
 const AWSXRay = require('aws-xray-sdk');
 import { DocumentClient, DeleteItemOutput} from 'aws-sdk/clients/dynamodb'
 //import { ConfigurationServicePlaceholders } from 'aws-sdk/lib/config_service_placeholders';
